@@ -10,7 +10,7 @@
 
 #### Both x86 and x64 processes are supported.
 
-#### In order for the injector to work, the load/unload methods need to match the following method signature:
+#### In order for the injector to work, the load/unload (Unload isn't required, optional) methods need to match the following method signature:
 
 ####    static void Method()
 
