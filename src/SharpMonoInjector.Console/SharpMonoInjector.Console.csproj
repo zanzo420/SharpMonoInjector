@@ -8,7 +8,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>SharpMonoInjector.Console</RootNamespace>
     <AssemblyName>smi</AssemblyName>
-    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
@@ -19,7 +19,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\build\debug\</OutputPath>
+    <OutputPath>..\build\debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -29,7 +29,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\..\build\release\</OutputPath>
+    <OutputPath>..\build\release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -49,7 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SharpMonoInjector\SharpMonoInjector.csproj">
-      <Project>{9a2f2e9f-d314-4b7a-ba8d-8522bb91a114}</Project>
+      <Project>{929d5f1d-ee93-4aa2-900c-d9689cbc4de1}</Project>
       <Name>SharpMonoInjector</Name>
     </ProjectReference>
   </ItemGroup>

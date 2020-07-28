@@ -1,5 +1,5 @@
-﻿using System.ComponentModel;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace SharpMonoInjector.Gui.ViewModels
@@ -10,7 +10,8 @@ namespace SharpMonoInjector.Gui.ViewModels
 
         protected void Set<T>(ref T property, T value, [CallerMemberName]string name = null)
         {
-            if (!EqualityComparer<T>.Default.Equals(property, value)) {
+            if (!EqualityComparer<T>.Default.Equals(property, value))
+            {
                 property = value;
                 RaisePropertyChanged(name);
             }

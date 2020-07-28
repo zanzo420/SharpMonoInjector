@@ -7,7 +7,7 @@
         xmlns:vm="clr-namespace:SharpMonoInjector.Gui.ViewModels"
         xmlns:cv="clr-namespace:SharpMonoInjector.Gui.Converters"
         mc:Ignorable="d"
-        Title="SharpMonoInjector 2.2" Height="352" Width="600">
+        Title="SharpMonoInjector 2.2 wh0am1 Mod" Height="352" Width="600" Background="#FF2C2C2C" Foreground="#FF3BB667">
 
     <Window.Resources>
         <cv:MonoProcessToStringConverter x:Key="MonoProcessToStringConverter"/>
@@ -29,7 +29,7 @@
             <RowDefinition Height="5"/>
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
-        <GroupBox Grid.Column="0" Grid.Row="0" Header="Inject" Margin="5, 5, 5, 5">
+        <GroupBox Grid.Column="0" Grid.Row="0" Header="Inject" Margin="5, 5, 5, 5" BorderThickness="0.5" BorderBrush="#FF39B561">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto"/>
@@ -45,35 +45,35 @@
                     <RowDefinition Height="5"/>
                     <RowDefinition Height="auto"/>
                 </Grid.RowDefinitions>
-                <Label Grid.Column="0" Grid.Row="0" Content="Process" HorizontalAlignment="Left"/>
+                <Label Grid.Column="0" Grid.Row="0" Content="Process" HorizontalAlignment="Left" Foreground="#FF6A9E7D"/>
                 <Button Grid.Column="2" Grid.Row="0" Content="Refresh" Height="20" HorizontalAlignment="Right" Command="{Binding Path=RefreshCommand, IsAsync=True}"/>
-                <ComboBox Grid.Column="0" Grid.Row="1" ItemsSource="{Binding Path=Processes}" SelectedItem="{Binding Path=SelectedProcess}" IsSynchronizedWithCurrentItem="True">
+                <ComboBox Grid.Column="0" Grid.Row="1" ItemsSource="{Binding Path=Processes}" SelectedItem="{Binding Path=SelectedProcess}" IsSynchronizedWithCurrentItem="True" Background="#FF4F4E4E">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding Converter={StaticResource MonoProcessToStringConverter}}"/>
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
-                <Label Grid.Column="0" Grid.Row="2" Content="Assembly to inject"/>
+                <Label Grid.Column="0" Grid.Row="2" Content="Assembly to inject" Foreground="#FF6A9E7D"/>
                 <Grid Grid.Column="0" Grid.Row="3">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="5"/>
                         <ColumnDefinition Width="auto"/>
                     </Grid.ColumnDefinitions>
-                    <TextBox Grid.Column="0" Grid.Row="0" Text="{Binding Path=AssemblyPath, UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBox Grid.Column="0" Grid.Row="0" Text="{Binding Path=AssemblyPath, UpdateSourceTrigger=PropertyChanged}" Background="#FF4F4E4E" Foreground="#FF39B561"/>
                     <Button Grid.Column="2" Grid.Row="0" Width="25" Content="..." Command="{Binding Path=BrowseCommand}"/>
                 </Grid>
-                <Label Grid.Column="0" Grid.Row="4" Content="Namespace"/>
-                <TextBox Grid.Column="0" Grid.Row="5" Text="{Binding Path=InjectNamespace, UpdateSourceTrigger=PropertyChanged}"/>
-                <Label Grid.Column="0" Grid.Row="6" Content="Class name"/>
-                <TextBox Grid.Column="0" Grid.Row="7" Text="{Binding Path=InjectClassName, UpdateSourceTrigger=PropertyChanged}"/>
-                <Label Grid.Column="0" Grid.Row="8" Content="Method name"/>
-                <TextBox Grid.Column="0" Grid.Row="9" Text="{Binding Path=InjectMethodName, UpdateSourceTrigger=PropertyChanged}"/>
+                <Label Grid.Column="0" Grid.Row="4" Content="Namespace" Foreground="#FF6A9E7D"/>
+                <TextBox Grid.Column="0" Grid.Row="5" Text="{Binding Path=InjectNamespace, UpdateSourceTrigger=PropertyChanged}" Background="#FF4F4E4E" Foreground="#FF39B561"/>
+                <Label Grid.Column="0" Grid.Row="6" Content="Class name" Foreground="#FF6A9E7D"/>
+                <TextBox Grid.Column="0" Grid.Row="7" Text="{Binding Path=InjectClassName, UpdateSourceTrigger=PropertyChanged}" Background="#FF4F4E4E" Foreground="#FF39B561"/>
+                <Label Grid.Column="0" Grid.Row="8" Content="Method name" Foreground="#FF6A9E7D"/>
+                <TextBox Grid.Column="0" Grid.Row="9" Text="{Binding Path=InjectMethodName, UpdateSourceTrigger=PropertyChanged}" Background="#FF4F4E4E" Foreground="#FF39B561"/>
                 <Button Grid.Column="0" Grid.Row="11" Content="Inject" HorizontalAlignment="Right" Command="{Binding Path=InjectCommand}"/>
             </Grid>
         </GroupBox>
-        <GroupBox Grid.Column="2" Grid.Row="0" Header="Eject" Margin="0, 5, 5, 5">
+        <GroupBox Grid.Column="2" Grid.Row="0" Header="Eject" Margin="0, 5, 5, 5" BorderBrush="#FF39B561" BorderThickness="0.5">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto"/>
@@ -88,29 +88,29 @@
                     <RowDefinition Height="5"/>
                     <RowDefinition Height="auto"/>
                 </Grid.RowDefinitions>
-                <Label Grid.Column="0" Grid.Row="0" Content="Injected assemblies"/>
-                <ListBox Grid.Column="0" Grid.Row="1" MinHeight="63" ItemsSource="{Binding Path=InjectedAssemblies}" SelectedItem="{Binding Path=SelectedAssembly}">
+                <Label Grid.Column="0" Grid.Row="0" Content="Injected assemblies" Foreground="#FF6A9E7D"/>
+                <ListBox Grid.Column="0" Grid.Row="1" MinHeight="63" ItemsSource="{Binding Path=InjectedAssemblies}" SelectedItem="{Binding Path=SelectedAssembly}" Background="#FF4F4E4E" Foreground="#FF39B561">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding Converter={StaticResource InjectedAssemblyToStringConverter}}"/>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
-                <Label Grid.Column="0" Grid.Row="3" Content="Namespace"/>
-                <TextBox Grid.Column="0" Grid.Row="4" Text="{Binding Path=EjectNamespace}"/>
-                <Label Grid.Column="0" Grid.Row="5" Content="Class name"/>
-                <TextBox Grid.Column="0" Grid.Row="6" Text="{Binding Path=EjectClassName}"/>
-                <Label Grid.Column="0" Grid.Row="7" Content="Method name"/>
-                <TextBox Grid.Column="0" Grid.Row="8" Text="{Binding Path=EjectMethodName}"/>
+                <Label Grid.Column="0" Grid.Row="3" Content="Namespace" Foreground="#FF6A9E7D"/>
+                <TextBox Grid.Column="0" Grid.Row="4" Text="{Binding Path=EjectNamespace}" Background="#FF4F4E4E" Foreground="#FF39B561"/>
+                <Label Grid.Column="0" Grid.Row="5" Content="Class name" Foreground="#FF6A9E7D"/>
+                <TextBox Grid.Column="0" Grid.Row="6" Text="{Binding Path=EjectClassName}" Background="#FF4F4E4E" Foreground="#FF39B561"/>
+                <Label Grid.Column="0" Grid.Row="7" Content="Method name" Foreground="#FF6A9E7D"/>
+                <TextBox Grid.Column="0" Grid.Row="8" Text="{Binding Path=EjectMethodName}" Background="#FF4F4E4E" Foreground="#FF39B561"/>
                 <Button Grid.Column="0" Grid.Row="10" Content="Eject" HorizontalAlignment="Right" Command="{Binding Path=EjectCommand}"/>
             </Grid>
         </GroupBox>
         <StatusBar Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="3">
             <StatusBar.Items>
-                <StatusBarItem>
+                <StatusBarItem Foreground="#FF21AC40" Background="#FF474747">
                     <TextBlock Text="Status:"/>
                 </StatusBarItem>
-                <StatusBarItem>
+                <StatusBarItem Background="#FF474747" Foreground="#FF1FA03C">
                     <TextBlock Text="{Binding Path=Status}">
                         <TextBlock.ContextMenu>
                             <ContextMenu>

@@ -102,9 +102,9 @@ namespace SharpMonoInjector
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool CloseHandle(IntPtr handle);
 
-        [DllImport("kernel32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool IsWow64Process(IntPtr hProcess, out bool wow64Process);
+        //[DllImport("kernel32.dll")]
+        //[return: MarshalAs(UnmanagedType.Bool)]
+        //public static extern bool IsWow64Process(IntPtr hProcess, out bool wow64Process);
 
         [DllImport("psapi.dll", SetLastError = true)]
         public static extern bool EnumProcessModulesEx(IntPtr hProcess, [MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U4)] [In][Out] IntPtr[] lphModule, int cb, [MarshalAs(UnmanagedType.U4)] out int lpcbNeeded, ModuleFilter dwFilterFlag);

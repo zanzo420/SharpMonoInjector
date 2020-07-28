@@ -50,21 +50,26 @@ namespace SharpMonoInjector.Gui.ViewModels
             {
                 int cp = Process.GetCurrentProcess().Id;
 
-                foreach (Process p in Process.GetProcesses()) {
+                foreach (Process p in Process.GetProcesses())
+                {
                     if (p.Id == cp)
                         continue;
 
                     const ProcessAccessRights flags = ProcessAccessRights.PROCESS_QUERY_INFORMATION | ProcessAccessRights.PROCESS_VM_READ;
                     IntPtr handle;
 
-                    if ((handle = Native.OpenProcess(flags, false, p.Id)) != IntPtr.Zero) {
-                        if (ProcessUtils.GetMonoModule(handle, out IntPtr mono)) {
+                    if ((handle = Native.OpenProcess(flags, false, p.Id)) != IntPtr.Zero)
+                    {
+                        if (ProcessUtils.GetMonoModule(handle, out IntPtr mono))
+                        {
                             processes.Add(new MonoProcess
                             {
                                 MonoModule = mono,
                                 Id = p.Id,
                                 Name = p.ProcessName
                             });
+
+                            break; //Add J.E
                         }
 
                         Native.CloseHandle(handle);
@@ -104,16 +109,20 @@ namespace SharpMonoInjector.Gui.ViewModels
         {
             IntPtr handle = Native.OpenProcess(ProcessAccessRights.PROCESS_ALL_ACCESS, false, SelectedProcess.Id);
 
-            if (handle == IntPtr.Zero) {
+            if (handle == IntPtr.Zero)
+            {
                 Status = "Failed to open process";
                 return;
             }
 
             byte[] file;
 
-            try {
+            try
+            {
                 file = File.ReadAllBytes(AssemblyPath);
-            } catch (IOException) {
+            }
+            catch (IOException)
+            {
                 Status = "Failed to read the file " + AssemblyPath;
                 return;
             }
@@ -121,8 +130,10 @@ namespace SharpMonoInjector.Gui.ViewModels
             IsExecuting = true;
             Status = "Injecting " + Path.GetFileName(AssemblyPath);
 
-            using (Injector injector = new Injector(handle, SelectedProcess.MonoModule)) {
-                try {
+            using (Injector injector = new Injector(handle, SelectedProcess.MonoModule))
+            {
+                try
+                {
                     IntPtr asm = injector.Inject(file, InjectNamespace, InjectClassName, InjectMethodName);
                     InjectedAssemblies.Add(new InjectedAssembly
                     {
@@ -132,9 +143,13 @@ namespace SharpMonoInjector.Gui.ViewModels
                         Is64Bit = injector.Is64Bit
                     });
                     Status = "Injection successful";
-                } catch (InjectorException ie) {
+                }
+                catch (InjectorException ie)
+                {
                     Status = "Injection failed: " + ie.Message;
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     Status = "Injection failed (unknown error): " + e.Message;
                 }
             }
@@ -154,7 +169,8 @@ namespace SharpMonoInjector.Gui.ViewModels
         {
             IntPtr handle = Native.OpenProcess(ProcessAccessRights.PROCESS_ALL_ACCESS, false, SelectedAssembly.ProcessId);
 
-            if (handle == IntPtr.Zero) {
+            if (handle == IntPtr.Zero)
+            {
                 Status = "Failed to open process";
                 return;
             }
@@ -164,14 +180,20 @@ namespace SharpMonoInjector.Gui.ViewModels
 
             ProcessUtils.GetMonoModule(handle, out IntPtr mono);
 
-            using (Injector injector = new Injector(handle, mono)) {
-                try {
+            using (Injector injector = new Injector(handle, mono))
+            {
+                try
+                {
                     injector.Eject(SelectedAssembly.Address, EjectNamespace, EjectClassName, EjectMethodName);
                     InjectedAssemblies.Remove(SelectedAssembly);
                     Status = "Ejection successful";
-                } catch (InjectorException ie) {
+                }
+                catch (InjectorException ie)
+                {
                     Status = "Ejection failed: " + ie.Message;
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     Status = "Ejection failed (unknown error): " + e.Message;
                 }
             }
@@ -183,7 +205,8 @@ namespace SharpMonoInjector.Gui.ViewModels
         public bool IsRefreshing
         {
             get => _isRefreshing;
-            set {
+            set
+            {
                 Set(ref _isRefreshing, value);
                 RefreshCommand.RaiseCanExecuteChanged();
             }
@@ -193,7 +216,8 @@ namespace SharpMonoInjector.Gui.ViewModels
         public bool IsExecuting
         {
             get => _isExecuting;
-            set {
+            set
+            {
                 Set(ref _isExecuting, value);
                 InjectCommand.RaiseCanExecuteChanged();
                 EjectCommand.RaiseCanExecuteChanged();
@@ -211,7 +235,8 @@ namespace SharpMonoInjector.Gui.ViewModels
         public MonoProcess SelectedProcess
         {
             get => _selectedProcess;
-            set {
+            set
+            {
                 _selectedProcess = value;
                 InjectCommand.RaiseCanExecuteChanged();
             }
@@ -228,7 +253,8 @@ namespace SharpMonoInjector.Gui.ViewModels
         public string AssemblyPath
         {
             get => _assemblyPath;
-            set {
+            set
+            {
                 Set(ref _assemblyPath, value);
                 if (File.Exists(_assemblyPath))
                     InjectNamespace = Path.GetFileNameWithoutExtension(_assemblyPath);
@@ -240,7 +266,8 @@ namespace SharpMonoInjector.Gui.ViewModels
         public string InjectNamespace
         {
             get => _injectNamespace;
-            set {
+            set
+            {
                 Set(ref _injectNamespace, value);
                 EjectNamespace = value;
             }
@@ -250,7 +277,8 @@ namespace SharpMonoInjector.Gui.ViewModels
         public string InjectClassName
         {
             get => _injectClassName;
-            set {
+            set
+            {
                 Set(ref _injectClassName, value);
                 EjectClassName = value;
                 InjectCommand.RaiseCanExecuteChanged();
@@ -261,7 +289,8 @@ namespace SharpMonoInjector.Gui.ViewModels
         public string InjectMethodName
         {
             get => _injectMethodName;
-            set {
+            set
+            {
                 Set(ref _injectMethodName, value);
                 if (_injectMethodName == "Load")
                     EjectMethodName = "Unload";
@@ -280,7 +309,8 @@ namespace SharpMonoInjector.Gui.ViewModels
         public InjectedAssembly SelectedAssembly
         {
             get => _selectedAssembly;
-            set {
+            set
+            {
                 Set(ref _selectedAssembly, value);
                 EjectCommand.RaiseCanExecuteChanged();
             }
@@ -297,7 +327,8 @@ namespace SharpMonoInjector.Gui.ViewModels
         public string EjectClassName
         {
             get => _ejectClassName;
-            set {
+            set
+            {
                 Set(ref _ejectClassName, value);
                 EjectCommand.RaiseCanExecuteChanged();
             }
@@ -307,7 +338,8 @@ namespace SharpMonoInjector.Gui.ViewModels
         public string EjectMethodName
         {
             get => _ejectMethodName;
-            set {
+            set
+            {
                 Set(ref _ejectMethodName, value);
                 EjectCommand.RaiseCanExecuteChanged();
             }

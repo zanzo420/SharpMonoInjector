@@ -21,7 +21,8 @@ namespace SharpMonoInjector
         {
             List<byte> bytes = new List<byte>();
 
-            for (int i = 0; i < length; i++) {
+            for (int i = 0; i < length; i++)
+            {
                 byte read = ReadBytes(address + bytes.Count, 1)[0];
 
                 if (read == 0x00)
@@ -70,17 +71,24 @@ namespace SharpMonoInjector
             return addr;
         }
 
-        public IntPtr AllocateAndWrite(string data) => AllocateAndWrite(Encoding.UTF8.GetBytes(data));
+        public IntPtr AllocateAndWrite(string data)
+        {
+            return AllocateAndWrite(Encoding.UTF8.GetBytes(data));
+        }
 
-        public IntPtr AllocateAndWrite(int data) => AllocateAndWrite(BitConverter.GetBytes(data));
+        public IntPtr AllocateAndWrite(int data)
+        {
+            return AllocateAndWrite(BitConverter.GetBytes(data));
+        }
 
-        public IntPtr AllocateAndWrite(long data) => AllocateAndWrite(BitConverter.GetBytes(data));
+        public IntPtr AllocateAndWrite(long data)
+        {
+            return AllocateAndWrite(BitConverter.GetBytes(data));
+        }
 
         public IntPtr Allocate(int size)
         {
-            IntPtr addr =
-                Native.VirtualAllocEx(_handle, IntPtr.Zero, size,
-                    AllocationType.MEM_COMMIT, MemoryProtection.PAGE_EXECUTE_READWRITE);
+            IntPtr addr = Native.VirtualAllocEx(_handle, IntPtr.Zero, size, AllocationType.MEM_COMMIT, MemoryProtection.PAGE_EXECUTE_READWRITE);
 
             if (addr == IntPtr.Zero)
                 throw new InjectorException("Failed to allocate process memory", new Win32Exception(Marshal.GetLastWin32Error()));

@@ -64,9 +64,7 @@ namespace SharpMonoInjector
 
         public Injector(string processName)
         {
-            Process process = Process.GetProcesses()
-                .FirstOrDefault(p => p.ProcessName
-                .Equals(processName, StringComparison.OrdinalIgnoreCase));
+            Process process = Process.GetProcesses().FirstOrDefault(p => p.ProcessName.Equals(processName, StringComparison.OrdinalIgnoreCase));
 
             if (process == null)
                 throw new InjectorException($"Could not find a process with the name {processName}");
@@ -84,8 +82,7 @@ namespace SharpMonoInjector
 
         public Injector(int processId)
         {
-            Process process = Process.GetProcesses()
-                .FirstOrDefault(p => p.Id == processId);
+            Process process = Process.GetProcesses().FirstOrDefault(p => p.Id == processId);
 
             if (process == null)
                 throw new InjectorException($"Could not find a process with the id {processId}");
@@ -237,16 +234,14 @@ namespace SharpMonoInjector
 
         private IntPtr GetClassFromName(IntPtr image, string @namespace, string className)
         {
-            IntPtr @class = Execute(Exports[mono_class_from_name],
-                image, _memory.AllocateAndWrite(@namespace), _memory.AllocateAndWrite(className));
+            IntPtr @class = Execute(Exports[mono_class_from_name], image, _memory.AllocateAndWrite(@namespace), _memory.AllocateAndWrite(className));
             ThrowIfNull(@class, mono_class_from_name);
             return @class;
         }
 
         private IntPtr GetMethodFromName(IntPtr @class, string methodName)
         {
-            IntPtr method = Execute(Exports[mono_class_get_method_from_name],
-                @class, _memory.AllocateAndWrite(methodName), IntPtr.Zero);
+            IntPtr method = Execute(Exports[mono_class_get_method_from_name], @class, _memory.AllocateAndWrite(methodName), IntPtr.Zero);
             ThrowIfNull(method, mono_class_get_method_from_name);
             return method;
         }
@@ -270,12 +265,12 @@ namespace SharpMonoInjector
         {
             IntPtr excPtr = Is64Bit ? _memory.AllocateAndWrite((long)0) : _memory.AllocateAndWrite(0);
 
-            IntPtr result = Execute(Exports[mono_runtime_invoke],
-                method, IntPtr.Zero, IntPtr.Zero, excPtr);
+            IntPtr result = Execute(Exports[mono_runtime_invoke], method, IntPtr.Zero, IntPtr.Zero, excPtr);
 
             IntPtr exc = (IntPtr)_memory.ReadInt(excPtr);
 
-            if (exc != IntPtr.Zero) {
+            if (exc != IntPtr.Zero)
+            {
                 string className = GetClassName(exc);
                 string message = ReadMonoString((IntPtr)_memory.ReadInt(exc + (Is64Bit ? 0x20 : 0x10)));
                 throw new InjectorException($"The managed method threw an exception: ({className}) {message}");
@@ -290,15 +285,12 @@ namespace SharpMonoInjector
 
         private IntPtr Execute(IntPtr address, params IntPtr[] args)
         {
-            IntPtr retValPtr = Is64Bit
-                ? _memory.AllocateAndWrite((long)0)
-                : _memory.AllocateAndWrite(0);
+            IntPtr retValPtr = Is64Bit ? _memory.AllocateAndWrite((long)0) : _memory.AllocateAndWrite(0);
 
             byte[] code = Assemble(address, retValPtr, args);
             IntPtr alloc = _memory.AllocateAndWrite(code);
 
-            IntPtr thread = Native.CreateRemoteThread(
-                _handle, IntPtr.Zero, 0, alloc, IntPtr.Zero, 0, out _);
+            IntPtr thread = Native.CreateRemoteThread(_handle, IntPtr.Zero, 0, alloc, IntPtr.Zero, 0, out _);
 
             if (thread == IntPtr.Zero)
                 throw new InjectorException("Failed to create a remote thread", new Win32Exception(Marshal.GetLastWin32Error()));
@@ -308,9 +300,7 @@ namespace SharpMonoInjector
             if (result == WaitResult.WAIT_FAILED)
                 throw new InjectorException("Failed to wait for a remote thread", new Win32Exception(Marshal.GetLastWin32Error()));
 
-            IntPtr ret = Is64Bit
-                ? (IntPtr)_memory.ReadLong(retValPtr)
-                : (IntPtr)_memory.ReadInt(retValPtr);
+            IntPtr ret = Is64Bit ? (IntPtr)_memory.ReadLong(retValPtr) : (IntPtr)_memory.ReadInt(retValPtr);
 
             if ((long)ret == 0x00000000C0000005)
                 throw new InjectorException($"An access violation occurred while executing {Exports.First(e => e.Value == address).Key}()");
@@ -320,16 +310,15 @@ namespace SharpMonoInjector
 
         private byte[] Assemble(IntPtr functionPtr, IntPtr retValPtr, IntPtr[] args)
         {
-            return Is64Bit
-                ? Assemble64(functionPtr, retValPtr, args)
-                : Assemble86(functionPtr, retValPtr, args);
+            return Is64Bit ? Assemble64(functionPtr, retValPtr, args) : Assemble86(functionPtr, retValPtr, args);
         }
 
         private byte[] Assemble86(IntPtr functionPtr, IntPtr retValPtr, IntPtr[] args)
         {
             Assembler asm = new Assembler();
 
-            if (_attach) {
+            if (_attach)
+            {
                 asm.Push(_rootDomain);
                 asm.MovEax(Exports[mono_thread_attach]);
                 asm.CallEax();
@@ -354,7 +343,8 @@ namespace SharpMonoInjector
 
             asm.SubRsp(40);
 
-            if (_attach) {
+            if (_attach)
+            {
                 asm.MovRax(Exports[mono_thread_attach]);
                 asm.MovRcx(_rootDomain);
                 asm.CallRax();
@@ -362,8 +352,10 @@ namespace SharpMonoInjector
 
             asm.MovRax(functionPtr);
 
-            for (int i = 0; i < args.Length; i++) {
-                switch (i) {
+            for (int i = 0; i < args.Length; i++)
+            {
+                switch (i)
+                {
                     case 0:
                         asm.MovRcx(args[i]);
                         break;

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
+using System.Security.Principal;
 
 namespace SharpMonoInjector.Console
 {
@@ -7,7 +9,20 @@ namespace SharpMonoInjector.Console
     {
         private static void Main(string[] args)
         {
-            if (args.Length == 0) {
+            System.Console.Clear();
+
+            bool IsElevated = new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
+
+            if (!IsElevated)
+            {                
+                System.Console.WriteLine("\r\nSharpMonoInjector 2.2 wh0am1 Mod\r\n\r\nWARNING: You are running this in an unpriveleged process, try from an Elevated Command Prompt.\r\n");
+                System.Console.WriteLine("\t As an alternative, right-click Game .exe and uncheck the Compatibility\r\n\t setting 'Run this program as Administrator'.\r\n\r\n");
+                System.Console.ReadKey();
+                //return;
+            }
+
+            if (args.Length == 0)
+            {
                 PrintHelp();
                 return;
             }
@@ -17,18 +32,24 @@ namespace SharpMonoInjector.Console
             bool inject = cla.IsSwitchPresent("inject");
             bool eject = cla.IsSwitchPresent("eject");
 
-            if (!inject && !eject) {
+            if (!inject && !eject)
+            {
                 System.Console.WriteLine("No operation (inject/eject) specified");
                 return;
             }
 
             Injector injector;
 
-            if (cla.GetIntArg("-p", out int pid)) {
+            if (cla.GetIntArg("-p", out int pid))
+            {
                 injector = new Injector(pid);
-            } else if (cla.GetStringArg("-p", out string pname)) {
+            }
+            else if (cla.GetStringArg("-p", out string pname))
+            {
                 injector = new Injector(pname);
-            } else {
+            }
+            else
+            {
                 System.Console.WriteLine("No process id/name specified");
                 return;
             }
@@ -42,7 +63,7 @@ namespace SharpMonoInjector.Console
         private static void PrintHelp()
         {
             const string help =
-                "SharpMonoInjector 2.2\r\n\r\n" +
+                "SharpMonoInjector 2.2 wh0am1 Mod\r\n\r\n" +
                 "Usage:\r\n" +
                 "smi.exe <inject/eject> <options>\r\n\r\n" +
                 "Options:\r\n" +
@@ -62,48 +83,59 @@ namespace SharpMonoInjector.Console
             string assemblyPath, @namespace, className, methodName;
             byte[] assembly;
 
-            if (args.GetStringArg("-a", out assemblyPath)) {
-                try {
+            if (args.GetStringArg("-a", out assemblyPath))
+            {
+                try
+                {
                     assembly = File.ReadAllBytes(assemblyPath);
-                } catch {
+                }
+                catch
+                {
                     System.Console.WriteLine("Could not read the file " + assemblyPath);
                     return;
                 }
-            } else {
+            }
+            else
+            {
                 System.Console.WriteLine("No assembly specified");
                 return;
             }
 
             args.GetStringArg("-n", out @namespace);
 
-            if (!args.GetStringArg("-c", out className)) {
+            if (!args.GetStringArg("-c", out className))
+            {
                 System.Console.WriteLine("No class name specified");
                 return;
             }
 
-            if (!args.GetStringArg("-m", out methodName)) {
+            if (!args.GetStringArg("-m", out methodName))
+            {
                 System.Console.WriteLine("No method name specified");
                 return;
             }
 
-            using (injector) {
+            using (injector)
+            {
                 IntPtr remoteAssembly = IntPtr.Zero;
 
-                try {
+                try
+                {
                     remoteAssembly = injector.Inject(assembly, @namespace, className, methodName);
-                } catch (InjectorException ie) {
+                }
+                catch (InjectorException ie)
+                {
                     System.Console.WriteLine("Failed to inject assembly: " + ie);
-                } catch (Exception exc) {
+                }
+                catch (Exception exc)
+                {
                     System.Console.WriteLine("Failed to inject assembly (unknown error): " + exc);
                 }
 
                 if (remoteAssembly == IntPtr.Zero)
                     return;
 
-                System.Console.WriteLine($"{Path.GetFileName(assemblyPath)}: " +
-                    (injector.Is64Bit
-                    ? $"0x{remoteAssembly.ToInt64():X16}"
-                    : $"0x{remoteAssembly.ToInt32():X8}"));
+                System.Console.WriteLine($"{Path.GetFileName(assemblyPath)}: " + (injector.Is64Bit ? $"0x{remoteAssembly.ToInt64():X16}" : $"0x{remoteAssembly.ToInt32():X8}"));
             }
         }
 
@@ -112,34 +144,47 @@ namespace SharpMonoInjector.Console
             IntPtr assembly;
             string @namespace, className, methodName;
 
-            if (args.GetIntArg("-a", out int intPtr)) {
+            if (args.GetIntArg("-a", out int intPtr))
+            {
                 assembly = (IntPtr)intPtr;
-            } else if (args.GetLongArg("-a", out long longPtr)) {
+            }
+            else if (args.GetLongArg("-a", out long longPtr))
+            {
                 assembly = (IntPtr)longPtr;
-            } else {
+            }
+            else
+            {
                 System.Console.WriteLine("No assembly pointer specified");
                 return;
             }
 
             args.GetStringArg("-n", out @namespace);
 
-            if (!args.GetStringArg("-c", out className)) {
+            if (!args.GetStringArg("-c", out className))
+            {
                 System.Console.WriteLine("No class name specified");
                 return;
             }
 
-            if (!args.GetStringArg("-m", out methodName)) {
+            if (!args.GetStringArg("-m", out methodName))
+            {
                 System.Console.WriteLine("No method name specified");
                 return;
             }
 
-            using (injector) {
-                try {
+            using (injector)
+            {
+                try
+                {
                     injector.Eject(assembly, @namespace, className, methodName);
                     System.Console.WriteLine("Ejection successful");
-                } catch (InjectorException ie) {
+                }
+                catch (InjectorException ie)
+                {
                     System.Console.WriteLine("Ejection failed: " + ie);
-                } catch (Exception exc) {
+                }
+                catch (Exception exc)
+                {
                     System.Console.WriteLine("Ejection failed (unknown error): " + exc);
                 }
             }
