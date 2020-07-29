@@ -4,7 +4,7 @@
 
 #### This was my favorite injector until that nasty process detection and x86/64 bug, now it's actually usable again. I still prefer my injector though, it uses syscalls he uses CreateRemoteThread that is noisy to Anti-Cheat products. I might be partial, but either way Warbler the original creator of SharpMonoInjector deserves credit for his work.
 
-#### SharpMonoInjector is a tool for injecting assemblies into Mono embedded applications, commonly Unity Engine based games. The target process *usually* does not have to be restarted in order to inject an updated version of the assembly. Your unload method must to destroy all of its resources (such as game objects).
+#### SharpMonoInjector is a tool for injecting assemblies into Mono embedded applications, commonly Unity Engine based games. The target process *usually* does not have to be restarted in order to inject an updated version of the assembly. Your unload method must destroy all of its resources (such as game objects).
 
 #### SharpMonoInjector works by dynamically generating machine code, writing it to the target process and executing it using CreateRemoteThread. The code calls functions in the mono embedded API. The return value is obtained with ReadProcessMemory.
 
