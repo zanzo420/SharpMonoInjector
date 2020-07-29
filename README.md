@@ -2,7 +2,7 @@
 
 #### Updated SharpMonoInjector to fix the process detection bug, x86/x64 detection bug fixed, and a couple fixes to make it more efficient. No modifications to his injection engine other than some added error checking. Built off Net 4.0 for those that are still on Win7 and can't run NetStandard 2.0. Since he didn't build-in any privilege checking I added some checks and the GUI version will automatically restart as Admin. The console version you'll get a warning and instructions on to 'fix' the game.
 
-#### This was my favorite injector until that nasty process detection and x86/64 bug, now it's actually usable again. I still prefer my injector though, it uses syscalls he uses CreateRemoteThread that is noisy to Anti-Cheat products. I might be partial, but either way Warbler the original creator of SharpMonoInjector deserves credit for his work.
+#### This was a great Unity injector until that nasty process detection and x86/64 bug, now it's actually usable again. I still prefer my injector though, it uses syscalls he uses CreateRemoteThread that is noisy to Anti-Cheat products. I might be partial, but either way Warbler the original creator of SharpMonoInjector deserves credit for his work.
 
 #### SharpMonoInjector is a tool for injecting assemblies into Mono embedded applications, commonly Unity Engine based games. The target process *usually* does not have to be restarted in order to inject an updated version of the assembly. Your unload method must destroy all of its resources (such as game objects).
 
