@@ -16,7 +16,7 @@
 
 #### In [releases](https://github.com/wh0am15533/SharpMonoInjector/releases), there is a console application and a GUI application available.
 
-![Screen](https://i.imgur.com/YrG7gnc.png)
+![Screen](https://i.imgur.com/RLKENti.png)
 
 
 ### Credit's to Original Project and Author: (https://github.com/warbler/SharpMonoInjector)
