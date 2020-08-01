@@ -4,14 +4,20 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using Microsoft.Win32;
 
 namespace SharpMonoInjector
 {
     public static class ProcessUtils
-    {
+    {        
         [DllImport("kernel32.dll", SetLastError = true, CallingConvention = CallingConvention.Winapi)]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool IsWow64Process2([In] IntPtr hProcess, [Out] out ushort processMachine, [Out] out ushort nativeMachine);
+
+        private static bool isTargetx64;
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool IsWow64Process(IntPtr hProcess, out bool wow64Process);
 
         public static IEnumerable<ExportedFunction> GetExportedFunctions(IntPtr handle, IntPtr mod)
         {
@@ -88,33 +94,66 @@ namespace SharpMonoInjector
             if (!Environment.Is64BitOperatingSystem)
                 return false;
 
-            bool isTargetx64 = false;
+            string OSVer = (string)Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows NT\CurrentVersion", "ProductName", null);
+            Console.WriteLine(OSVer);
 
-            if (handle != IntPtr.Zero)
+            if(OSVer.Contains("Windows 10"))
             {
-                ushort pMachine = 0;
-                ushort nMachine = 0;
+                #region[Win10]
+            
+                isTargetx64 = false;
 
-                if (!IsWow64Process2(handle, out pMachine, out nMachine))
+                if (handle != IntPtr.Zero)
                 {
-                    //handle error
-                }
+                    ushort pMachine = 0;
+                    ushort nMachine = 0;
 
-                if (pMachine == 332)
-                {
-                    isTargetx64 = false;
+                    try
+                    {
+                        if (!IsWow64Process2(handle, out pMachine, out nMachine))
+                        {
+                            //handle error
+                        }
+
+                        if (pMachine == 332)
+                        {
+                            isTargetx64 = false;
+                        }
+                        else
+                        {
+                            isTargetx64 = true;
+
+                        }
+
+                        return isTargetx64;
+                    }
+                    catch { /* Will try the Win7 method */ }
                 }
-                else
-                {
-                    isTargetx64 = true;
-                }
+            
+                #endregion
             }
 
+            #region[Win7]
 
-            //if (!Native.IsWow64Process(handle, out bool isWow64))
-            //    return IntPtr.Size == 8; // assume it's the same as the current process
+            IsWow64Process(handle, out bool isTargetWOWx64);
 
-            return isTargetx64;
+            if (isTargetWOWx64)
+            {
+                return false; // It is WOW64 so it's a 32-bit process
+            }
+            else 
+            {
+                return true; // It's not a WOW64 process so 64-bit process, and we already check if OS is 32 or 64 bit.
+            }
+
+            #endregion
+
+
+            //ORIG
+            //if (!IsWow64Process(handle, out bool is64bit))
+            //{
+            //    return IntPtr.Size == 8; // assume it's the same as the current process */ 
+            //}
         }
     }
 }

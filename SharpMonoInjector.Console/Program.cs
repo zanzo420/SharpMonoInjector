@@ -17,7 +17,7 @@ namespace SharpMonoInjector.Console
             {                
                 System.Console.WriteLine("\r\nSharpMonoInjector 2.2 wh0am1 Mod\r\n\r\nWARNING: You are running this in an unpriveleged process, try from an Elevated Command Prompt.\r\n");
                 System.Console.WriteLine("\t As an alternative, right-click Game .exe and uncheck the Compatibility\r\n\t setting 'Run this program as Administrator'.\r\n\r\n");
-                System.Console.ReadKey();
+                //System.Console.ReadKey();
                 //return;
             }
 

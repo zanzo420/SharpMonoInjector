@@ -64,6 +64,7 @@ namespace SharpMonoInjector
 
         public Injector(string processName)
         {
+            if (processName.EndsWith(".exe")) { processName.Replace(".exe", ""); }
             Process process = Process.GetProcesses().FirstOrDefault(p => p.ProcessName.Equals(processName, StringComparison.OrdinalIgnoreCase));
 
             if (process == null)
