@@ -14,7 +14,7 @@
 
 ####    static void Method()
 
-# IYou can find the latest binary releases here: (https://www.unknowncheats.me/forum/unity/408878-sharpmonoinjector-fixed-updated.html), there is a console application and a GUI application available.
+# You can find the latest binary releases here: (https://www.unknowncheats.me/forum/unity/408878-sharpmonoinjector-fixed-updated.html), there is a console application and a GUI application available.
 
 ![Screen](https://i.imgur.com/RLKENti.png)
 
