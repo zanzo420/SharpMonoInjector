@@ -9,7 +9,7 @@ namespace SharpMonoInjector.Gui.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value == null)
+            if (value == null || value == "")
                 return null;
 
             MonoProcess mp = (MonoProcess)value;

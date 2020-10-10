@@ -2,6 +2,8 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
+using System.Security.Principal;
 using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.Win32;
@@ -42,9 +44,13 @@ namespace SharpMonoInjector.Gui.ViewModels
 
         private async void ExecuteRefreshCommand(object parameter)
         {
+            File.AppendAllText(AppDomain.CurrentDomain.BaseDirectory + "\\DebugLog.txt", "[MainWindowViewModel] - ExecuteRefresh Entered\r\n");
             IsRefreshing = true;
             Status = "Refreshing processes";
             ObservableCollection<MonoProcess> processes = new ObservableCollection<MonoProcess>();
+
+            File.AppendAllText(AppDomain.CurrentDomain.BaseDirectory + "\\DebugLog.txt", "[MainWindowViewModel] - Setting Process Access Rights:\r\n\tPROCESS_QUERY_INFORMATION\r\n\tPROCESS_VM_READ\r\n");
+            File.AppendAllText(AppDomain.CurrentDomain.BaseDirectory + "\\DebugLog.txt", "[MainWindowViewModel] - Checking Processes for Mono\r\n");
 
             await Task.Run(() =>
             {
@@ -52,27 +58,34 @@ namespace SharpMonoInjector.Gui.ViewModels
 
                 foreach (Process p in Process.GetProcesses())
                 {
-                    if (p.Id == cp)
-                        continue;
+                    var t = GetProcessUser(p);
 
-                    const ProcessAccessRights flags = ProcessAccessRights.PROCESS_QUERY_INFORMATION | ProcessAccessRights.PROCESS_VM_READ;
-                    IntPtr handle;
-
-                    if ((handle = Native.OpenProcess(flags, false, p.Id)) != IntPtr.Zero)
+                    if (t != null)
                     {
-                        if (ProcessUtils.GetMonoModule(handle, out IntPtr mono))
+                        if (p.Id == cp)
+                            continue;
+
+                        const ProcessAccessRights flags = ProcessAccessRights.PROCESS_QUERY_INFORMATION | ProcessAccessRights.PROCESS_VM_READ;
+                        IntPtr handle;
+
+                        if ((handle = Native.OpenProcess(flags, false, p.Id)) != IntPtr.Zero)
                         {
-                            processes.Add(new MonoProcess
+                            File.AppendAllText(AppDomain.CurrentDomain.BaseDirectory + "\\DebugLog.txt", "\t" + p.ProcessName + ".exe\r\n");
+                            if (ProcessUtils.GetMonoModule(handle, out IntPtr mono))
                             {
-                                MonoModule = mono,
-                                Id = p.Id,
-                                Name = p.ProcessName
-                            });
+                                File.AppendAllText(AppDomain.CurrentDomain.BaseDirectory + "\\DebugLog.txt", "\t\tMono found in process: " + p.ProcessName + ".exe\r\n");
+                                processes.Add(new MonoProcess
+                                {
+                                    MonoModule = mono,
+                                    Id = p.Id,
+                                    Name = p.ProcessName
+                                });
 
-                            break; //Add J.E
+                                break; //Add J.E
+                            }
+
+                            Native.CloseHandle(handle);
                         }
-
-                        Native.CloseHandle(handle);
                     }
                 }
             });
@@ -80,10 +93,17 @@ namespace SharpMonoInjector.Gui.ViewModels
             Processes = processes;
 
             if (Processes.Count > 0)
+            {
+                Status = "Processes refreshed";
                 SelectedProcess = Processes[0];
+            }
+            else
+            {
+                Status = "No Mono processess found!";
+                File.AppendAllText(AppDomain.CurrentDomain.BaseDirectory + "\\DebugLog.txt", "No Mono processess found:\r\n");
+            }
 
             IsRefreshing = false;
-            Status = "Processes refreshed";
         }
 
         private void ExecuteBrowseCommand(object parameter)
@@ -344,5 +364,41 @@ namespace SharpMonoInjector.Gui.ViewModels
                 EjectCommand.RaiseCanExecuteChanged();
             }
         }
+
+        #region[Process Refresh Fix]
+
+        private static string GetProcessUser(Process process)
+        {
+            IntPtr processHandle = IntPtr.Zero;
+            try
+            {
+                OpenProcessToken(process.Handle, 8, out processHandle);
+                using (WindowsIdentity wi = new WindowsIdentity(processHandle))
+                {
+                    string user = wi.Name;
+                    return user.Contains(@"\") ? user.Substring(user.IndexOf(@"\") + 1) : user;
+                }
+            }
+            catch
+            {
+                return null;
+            }
+            finally
+            {
+                if (processHandle != IntPtr.Zero)
+                {
+                    CloseHandle(processHandle);
+                }
+            }
+        }
+
+        [DllImport("advapi32.dll", SetLastError = true)]
+        private static extern bool OpenProcessToken(IntPtr ProcessHandle, uint DesiredAccess, out IntPtr TokenHandle);
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool CloseHandle(IntPtr hObject);
+
+        #endregion
     }
 }
+
