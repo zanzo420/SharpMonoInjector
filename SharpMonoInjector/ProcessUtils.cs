@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -35,13 +36,19 @@ namespace SharpMonoInjector
 
                 for (int i = 0; i < count; i++)
                 {
-                    int offset = memory.ReadInt(names + i * 4);
-                    string name = memory.ReadString(mod + offset, 32, Encoding.ASCII);
-                    short ordinal = memory.ReadShort(ordinals + i * 2);
-                    IntPtr address = mod + memory.ReadInt(functions + ordinal * 4);
+                    try // Added 8-7-2021 J.E
+                    {
+                        int offset = memory.ReadInt(names + i * 4);
+                        string name = memory.ReadString(mod + offset, 32, Encoding.ASCII);
+                        short ordinal = memory.ReadShort(ordinals + i * 2);
+                        IntPtr address = mod + memory.ReadInt(functions + ordinal * 4);
 
-                    if (address != IntPtr.Zero)
-                        yield return new ExportedFunction(name, address);
+                        if (address != IntPtr.Zero)
+                        {
+                            yield return new ExportedFunction(name, address);
+                        }
+                    }
+                    finally { }
                 }
             }
         }
@@ -67,22 +74,28 @@ namespace SharpMonoInjector
 
             for (int i = 0; i < count; i++)
             {
-                StringBuilder path = new StringBuilder(260);
-                Native.GetModuleFileNameEx(handle, ptrs[i], path, 260);
-
-                if (path.ToString().IndexOf("mono", StringComparison.OrdinalIgnoreCase) > -1)
+                try
                 {
-                    if (!Native.GetModuleInformation(handle, ptrs[i], out MODULEINFO info, (uint)(size * ptrs.Length)))
-                        throw new InjectorException("Failed to get module information", new Win32Exception(Marshal.GetLastWin32Error()));
+                    StringBuilder path = new StringBuilder(260);
+                    Native.GetModuleFileNameEx(handle, ptrs[i], path, 260);
 
-                    var funcs = GetExportedFunctions(handle, info.lpBaseOfDll);
-
-                    if (funcs.Any(f => f.Name == "mono_get_root_domain"))
+                    if (path.ToString().IndexOf("mono", StringComparison.OrdinalIgnoreCase) > -1)
                     {
-                        monoModule = info.lpBaseOfDll;
-                        return true;
+                        if (!Native.GetModuleInformation(handle, ptrs[i], out MODULEINFO info, (uint)(size * ptrs.Length)))
+                        {
+                            throw new InjectorException("Failed to get module information", new Win32Exception(Marshal.GetLastWin32Error()));
+                        }
+
+                        var funcs = GetExportedFunctions(handle, info.lpBaseOfDll);
+
+                        if (funcs.Any(f => f.Name == "mono_get_root_domain"))
+                        {
+                            monoModule = info.lpBaseOfDll;
+                            return true;
+                        }
                     }
                 }
+                catch (Exception ex) { File.AppendAllText(AppDomain.CurrentDomain.BaseDirectory + "\\DebugLog.txt", "[ProcessUtils] GetMono - ERROR: " + ex.Message + "\r\n"); }
             }
 
             monoModule = IntPtr.Zero;
@@ -91,69 +104,73 @@ namespace SharpMonoInjector
 
         public static bool Is64BitProcess(IntPtr handle)
         {
-            if (!Environment.Is64BitOperatingSystem)
-                return false;
-
-            string OSVer = (string)Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows NT\CurrentVersion", "ProductName", null);
-            Console.WriteLine(OSVer);
-
-            if(OSVer.Contains("Windows 10"))
+            try
             {
-                #region[Win10]
-            
-                isTargetx64 = false;
+                if (!Environment.Is64BitOperatingSystem) { return false; }
 
-                if (handle != IntPtr.Zero)
+                string OSVer = (string)Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows NT\CurrentVersion", "ProductName", null);
+                Console.WriteLine(OSVer);
+
+                if(OSVer.Contains("Windows 10"))
                 {
-                    ushort pMachine = 0;
-                    ushort nMachine = 0;
-
-                    try
-                    {
-                        if (!IsWow64Process2(handle, out pMachine, out nMachine))
-                        {
-                            //handle error
-                        }
-
-                        if (pMachine == 332)
-                        {
-                            isTargetx64 = false;
-                        }
-                        else
-                        {
-                            isTargetx64 = true;
-
-                        }
-
-                        return isTargetx64;
-                    }
-                    catch { /* Will try the Win7 method */ }
-                }
+                    #region[Win10]
             
+                    isTargetx64 = false;
+
+                    if (handle != IntPtr.Zero)
+                    {
+                        ushort pMachine = 0;
+                        ushort nMachine = 0;
+
+                        try
+                        {
+                            if (!IsWow64Process2(handle, out pMachine, out nMachine))
+                            {
+                                //handle error
+                            }
+
+                            if (pMachine == 332)
+                            {
+                                isTargetx64 = false;
+                            }
+                            else
+                            {
+                                isTargetx64 = true;
+
+                            }
+
+                            return isTargetx64;
+                        }
+                        catch { /* Will try the Win7 method */ }
+                    }
+            
+                    #endregion
+                }
+
+                #region[Win7]
+
+                IsWow64Process(handle, out bool isTargetWOWx64);
+
+                if (isTargetWOWx64)
+                {
+                    return false; // It is WOW64 so it's a 32-bit process
+                }
+                else 
+                {
+                    return true; // It's not a WOW64 process so 64-bit process, and we already check if OS is 32 or 64 bit.
+                }
+
                 #endregion
+
+
+                //ORIG
+                //if (!IsWow64Process(handle, out bool is64bit))
+                //{
+                //    return IntPtr.Size == 8; // assume it's the same as the current process */ 
+                //}
             }
-
-            #region[Win7]
-
-            IsWow64Process(handle, out bool isTargetWOWx64);
-
-            if (isTargetWOWx64)
-            {
-                return false; // It is WOW64 so it's a 32-bit process
-            }
-            else 
-            {
-                return true; // It's not a WOW64 process so 64-bit process, and we already check if OS is 32 or 64 bit.
-            }
-
-            #endregion
-
-
-            //ORIG
-            //if (!IsWow64Process(handle, out bool is64bit))
-            //{
-            //    return IntPtr.Size == 8; // assume it's the same as the current process */ 
-            //}
+            catch (Exception ex) { File.AppendAllText(AppDomain.CurrentDomain.BaseDirectory + "\\DebugLog.txt", "[ProcessUtils] is64Bit - ERROR: " + ex.Message + "\r\n"); }
+            return true;
         }
     }
 }

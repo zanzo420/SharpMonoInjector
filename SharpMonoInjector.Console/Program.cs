@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Management;
 using System.Security.Principal;
 
 namespace SharpMonoInjector.Console
@@ -15,10 +17,15 @@ namespace SharpMonoInjector.Console
 
             if (!IsElevated)
             {                
-                System.Console.WriteLine("\r\nSharpMonoInjector 2.2 wh0am1 Mod\r\n\r\nWARNING: You are running this in an unpriveleged process, try from an Elevated Command Prompt.\r\n");
+                System.Console.WriteLine("\r\nSharpMonoInjector 2.4 wh0am1 Mod\r\n\r\nWARNING: You are running this in an unpriveleged process, try from an Elevated Command Prompt.\r\n");
                 System.Console.WriteLine("\t As an alternative, right-click Game .exe and uncheck the Compatibility\r\n\t setting 'Run this program as Administrator'.\r\n\r\n");
                 //System.Console.ReadKey();
                 //return;
+            }
+
+            if (AntivirusInstalled())
+            {
+                System.Console.WriteLine("!!! WARNING ANTIVIRUS DETECTED !!! CHECK DEBUG.LOG FOR RUNNING PROCESS.\r\n\r\n");
             }
 
             if (args.Length == 0)
@@ -63,7 +70,7 @@ namespace SharpMonoInjector.Console
         private static void PrintHelp()
         {
             const string help =
-                "SharpMonoInjector 2.2 wh0am1 Mod\r\n\r\n" +
+                "SharpMonoInjector 2.4 wh0am1 Mod\r\n\r\n" +
                 "Usage:\r\n" +
                 "smi.exe <inject/eject> <options>\r\n\r\n" +
                 "Options:\r\n" +
@@ -189,5 +196,101 @@ namespace SharpMonoInjector.Console
                 }
             }
         }
+
+        #region[AntiVirus PreTest]
+
+        public static bool AntivirusInstalled()
+        {
+            // ref: https://stackoverflow.com/questions/1331887/detect-antivirus-on-windows-using-c-sharp
+
+            #region[Pre-Windows 7]
+            /* 
+            try
+            {
+                bool defenderFlag = false;
+                string wmipathstr = @"\\" + Environment.MachineName + @"\root\SecurityCenter";
+
+                ManagementObjectSearcher searcher = new ManagementObjectSearcher(wmipathstr, "SELECT * FROM AntivirusProduct");
+                ManagementObjectCollection instances = searcher.Get();
+
+                if (instances.Count > 0)
+                {
+                    File.AppendAllText(AppDomain.CurrentDomain.BaseDirectory + "\\DebugLog.txt", "AntiVirus Installed: True\r\n");
+
+                    string installedAVs = "Installed AntiVirus':\r\n";
+                    foreach (ManagementBaseObject av in instances)
+                    {
+                        //installedAVs += av.GetText(TextFormat.WmiDtd20) + "\r\n";
+                        var AVInstalled = ((string)av.GetPropertyValue("pathToSignedProductExe")).Replace("//", "") + " " + (string)av.GetPropertyValue("pathToSignedReportingExe");
+                        installedAVs += "   " + AVInstalled + "\r\n";
+
+                        if (((string)av.GetPropertyValue("pathToSignedProductExe")).StartsWith("windowsdefender") && ((string)av.GetPropertyValue("pathToSignedReportingExe")).EndsWith("Windows Defender\\MsMpeng.exe")) { defenderFlag = true; }
+                    }
+                    File.AppendAllText(AppDomain.CurrentDomain.BaseDirectory + "\\DebugLog.txt", installedAVs + "\r\n");
+                }
+                else { File.AppendAllText(AppDomain.CurrentDomain.BaseDirectory + "\\DebugLog.txt", "AntiVirus Installed: False\r\n"); }
+
+                if (defenderFlag) { return false; } else { return instances.Count > 0; }
+            }
+
+            catch (Exception e)
+            {
+                File.AppendAllText(AppDomain.CurrentDomain.BaseDirectory + "\\DebugLog.txt", "Error Checking for AV: " + e.Message + "\r\n");
+            }
+            */
+            #endregion
+
+            try
+            {
+                List<string> avs = new List<string>();
+                bool defenderFlag = false;
+                string wmipathstr = @"\\" + Environment.MachineName + @"\root\SecurityCenter2";
+
+                ManagementObjectSearcher searcher = new ManagementObjectSearcher(wmipathstr, "SELECT * FROM AntivirusProduct");
+                ManagementObjectCollection instances = searcher.Get();
+
+                if (instances.Count > 0)
+                {
+                    File.AppendAllText(AppDomain.CurrentDomain.BaseDirectory + "\\DebugLog.txt", "AntiVirus Installed: True\r\n");
+
+                    string installedAVs = "Installed AntiVirus':\r\n";
+                    foreach (ManagementBaseObject av in instances)
+                    {
+                        //installedAVs += av.GetText(TextFormat.WmiDtd20) + "\r\n";
+                        var AVInstalled = ((string)av.GetPropertyValue("pathToSignedProductExe")).Replace("//", "") + " " + (string)av.GetPropertyValue("pathToSignedReportingExe");
+                        installedAVs += "   " + AVInstalled + "\r\n";
+                        avs.Add(AVInstalled.ToLower());
+
+                        // Comment here to test
+                        //if (((string)av.GetPropertyValue("pathToSignedProductExe")).StartsWith("windowsdefender") && ((string)av.GetPropertyValue("pathToSignedReportingExe")).EndsWith("Windows Defender\\MsMpeng.exe")) { defenderFlag = true; }
+                    }
+                    File.AppendAllText(AppDomain.CurrentDomain.BaseDirectory + "\\DebugLog.txt", installedAVs + "\r\n");
+                }
+                else { File.AppendAllText(AppDomain.CurrentDomain.BaseDirectory + "\\DebugLog.txt", "AntiVirus Installed: False\r\n"); }
+
+                foreach (Process p in Process.GetProcesses())
+                {
+                    foreach (var detectedAV in avs)
+                    {
+                        if (detectedAV.EndsWith(p.ProcessName.ToLower() + ".exe"))
+                        {
+                            File.AppendAllText(AppDomain.CurrentDomain.BaseDirectory + "\\DebugLog.txt", "AntiVirus Running: " + detectedAV + "\r\n");
+                        }
+                    }
+                }
+
+                if (defenderFlag) { return false; } else { return instances.Count > 0; }
+            }
+
+            catch (Exception e)
+            {
+                File.AppendAllText(AppDomain.CurrentDomain.BaseDirectory + "\\DebugLog.txt", "Error Checking for AV: " + e.Message + "\r\n");
+            }
+
+            return false;
+        }
+
+
+        #endregion
     }
 }

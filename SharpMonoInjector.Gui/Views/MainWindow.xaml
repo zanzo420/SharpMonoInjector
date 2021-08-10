@@ -8,7 +8,7 @@
         xmlns:vm="clr-namespace:SharpMonoInjector.Gui.ViewModels"
         xmlns:cv="clr-namespace:SharpMonoInjector.Gui.Converters"
         mc:Ignorable="d"
-        Title="SharpMonoInjector 2.3 wh0am1 Mod" Height="360" Width="600" Style="{DynamicResource Main}" WindowStyle="None" ResizeMode="NoResize" Background="#FF2C2C2C" Foreground="#FF3BB667">
+        Title="SharpMonoInjector 2.4 wh0am1 Mod" Height="360" Width="600" Style="{DynamicResource Main}" WindowStyle="None" ResizeMode="NoResize" Background="#FF2C2C2C" Foreground="#FF3BB667">
 
     <Window.Resources>
         <cv:MonoProcessToStringConverter x:Key="MonoProcessToStringConverter"/>
@@ -519,12 +519,12 @@
                 <Button Grid.Column="0" Grid.Row="10" Content="Eject" Style="{DynamicResource DarkButton}" Foreground="#FF289746" BorderBrush="#FF272727" HorizontalAlignment="Right" Command="{Binding Path=EjectCommand}" FontSize="16" />
             </Grid>
         </GroupBox>
-        <StatusBar Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="3">
+        <StatusBar Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="3" Background="#FF2A2A2C">
             <StatusBar.Items>
                 <StatusBarItem Foreground="#FF21AC40" BorderBrush="#FF272727" Background="#2A2A2C">
                     <TextBlock Text="Status:"/>
                 </StatusBarItem>
-                <StatusBarItem  BorderBrush="#FF272727" Background="#2A2A2C" Foreground="#FF1FA03C">
+                <StatusBarItem  BorderBrush="#FF272727" Background="#2A2A2C" Foreground="#FF1FA03C" Width="450">
                     <TextBlock Text="{Binding Path=Status}">
                         <TextBlock.ContextMenu>
                             <ContextMenu>
@@ -532,6 +532,12 @@
                             </ContextMenu>
                         </TextBlock.ContextMenu>
                     </TextBlock>
+                </StatusBarItem>
+                <StatusBarItem x:Name="uiavalert" x:FieldModifier="public" Foreground="{Binding Path=AVColor}" BorderBrush="#FF272727" Background="#2A2A2C" HorizontalAlignment="Right">
+                    <TextBlock Text="AV Detected:"/>
+                </StatusBarItem>
+                <StatusBarItem  BorderBrush="#FF272727" Background="#FF2C2A2C" Foreground="{Binding Path=AVColor}" Width="60" HorizontalAlignment="Left" Height="24">
+                    <TextBlock Text="{Binding Path=AVAlert}" />
                 </StatusBarItem>
             </StatusBar.Items>
         </StatusBar>
